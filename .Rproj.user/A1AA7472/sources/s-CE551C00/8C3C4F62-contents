@@ -1,0 +1,512 @@
+LicorDataC17<-full_join(LicorDataC16, LicorData070722_2)
+LicorDataCombined<-full_join(LicorDataC17, LicorData070622_2)
+LicorDataCombined$gsw<-as.numeric(LicorDataCombined$gsw)
+##read in datalog data
+MADdatalog<-read.csv("MAD Datalog - Sheet1.csv", header=T)
+##combine datalog and licor data
+LicorDatalog<-left_join(LicorDataCombined, MADdatalog)
+# LicorFiles <- list.files(path = "~/Desktop/LicorData2022/CondensedLicorFiles")
+# for (i in 1:length(LicorFiles)){
+#   LicorFile<-read_excel(LicorFiles[i], skip=14)
+#   LicorDataFile<-LicorFile[-1,]
+#   names(LicorFile)[1]<-"SampleID"
+#   LicorFile$A<-as.numeric(LicorFile$A)
+#   if (i == 1){
+#     CombinedLicorData<-LicorFile
+#   }
+#   if (i != 1){
+#     CombinedLicorData<-full_join(CombinedLicorData, LicorFile)
+#   }
+# }
+#   CombinedLicorData$gsw<-as.numeric(LicorDataCombined$gsw)
+# ##read in datalog data
+# MADdatalog<-read.csv("MAD Datalog - Sheet1.csv", header=T)
+#
+# ##combine datalog and licor data
+# LicorDatalog<-left_join(LicorDataCombined, MADdatalog)
+LicorMeans<-LicorDatalog%>%
+group_by(SampleID)%>%
+summarize(AverageA=mean(as.numeric(A)),
+sdA=sd(as.numeric(A)),
+AverageGSW=mean(gsw),
+sdGSW=sd(gsw))
+#Mycotreatment_Revised = Mycotreatment_Revised,
+#WaterTreatment = WaterTreatment,
+#Dayswithoutwater=Dayswithoutwater)
+LicorMeans<-full_join(LicorMeans, MADdatalog)
+Adata<-ggplot(data=LicorMeans%>%
+filter(AverageA>-1),
+aes(x=SoilwaterContent_gwet, y=AverageA))+
+geom_jitter(aes(color=Mycotreatment_Revised, shape=na.pass(WaterTreatment))
+#+geom_errorbar(aes(ymin=AverageA-sdA, ymax=AverageA+sdA, width=0.1, color=Mycotreatment_Revised))
+) +
+#customizing plot
+scale_color_manual(values=mycocolors)+
+theme(text = element_text(),
+panel.background =
+element_rect(fill="transparent", colour = NA),
+plot.background =
+element_rect(fill="transparent",colour = NA),
+panel.border =
+element_rect(fill="transparent", colour = "black"),
+axis.title.y =
+element_text(angle=90, size = 12,
+margin = margin(r=3, unit = "mm")),
+axis.title.x =
+element_text(size=12,
+margin = margin(t=3, unit = "mm")),
+axis.text.x = element_text(size=12,
+margin = unit(c(t = 2.5, r = 0,
+b = 0, l = 0), "mm")),
+axis.text.y = element_text(size=12,
+margin = unit(c(t = 0, r = 2.5,
+b = 0, l = 0), "mm")),
+axis.line = element_blank(),
+axis.ticks.x = element_line(colour = "black"),
+axis.ticks.y = element_line(colour = "black"),
+axis.ticks.length=unit(-1.4, "mm"),
+panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(),
+legend.key = element_rect(fill="transparent",
+colour = NA),
+legend.position ="right",
+plot.margin=margin(t=2, r=2, b=2, l=2, unit = "mm"),
+strip.background=
+element_rect(fill="transparent", colour=NA),
+strip.text = element_text(face="bold"))
+Adata
+GSWdata<-ggplot(data=LicorMeans%>%
+filter(AverageGSW>-.05),
+aes(x=SoilwaterContent_gwet, y=AverageGSW))+
+geom_point(aes(color=Mycotreatment_Revised, shape=WaterTreatment))
+GSWdata
+AvGSW<-ggplot(data=LicorMeans%>%
+filter(AverageA>-1),
+aes(x=AverageGSW, y=AverageA))+
+geom_point(aes(color=Mycotreatment_Revised))+
+facet_wrap(Mycotreatment_Revised~WaterTreatment)
+AvGSW
+MCdata<-ggplot(data=LicorMeans%>%
+filter(AverageA>-1),
+aes(x=NumColonizedRoots, y=AverageA))+
+geom_point(aes(color=Mycotreatment_Revised))
+library(ggplot2)
+library(dplyr)
+library(readxl)
+mycocolors=c("#9A3C0D","#6B8281")
+mycocolors2=c("#D4553F","#89A2A3")
+setwd("~/Desktop/LicorData2022")
+##licor file 1
+LicorData062822<-read_excel("2022-06-28-0958_logdata.condensed.xlsx", skip=14)
+LicorData062822<-LicorData062822[-1,]
+names(LicorData062822)[1]<-"SampleID"
+LicorData062822$A<-as.numeric(LicorData062822$A)
+##licor file 2
+LicorData062922<-read_excel("2022-06-29-0944_logdata.condensed.xlsx", skip=14)
+LicorData062922<-LicorData062922[-1,]
+names(LicorData062922)[1]<-"SampleID"
+LicorData062922$A<-as.numeric(LicorData062922$A)
+##licor file 3
+LicorData063022<-read_excel("2022-06-30-0908_logdata.condensed.xlsx", skip=14)
+LicorData063022<-LicorData063022[-1,]
+names(LicorData063022)[1]<-"SampleID"
+LicorData063022$A<-as.numeric(LicorData063022$A)
+##file 4
+LicorData070422<-read_excel("2022-07-04-0933_logdata.condensed.xlsx", skip = 14)
+LicorData070422<-LicorData070422[-1,]
+names(LicorData070422)[1]<-"SampleID"
+LicorData070422$A<-as.numeric(LicorData070422$A)
+##file 5
+LicorData070422_2<-read_excel("2022-07-04-0937_logdata.condensed.xlsx", skip = 14)
+LicorData070422_2<-LicorData070422_2[-1,]
+names(LicorData070422_2)[1]<-"SampleID"
+LicorData070422_2$A<-as.numeric(LicorData070422_2$A)
+##file 6
+LicorData070522<-read_excel("2022-07-05-0830_logdata.condensed.xlsx", skip = 14)
+LicorData070522<-LicorData070522[-1,]
+names(LicorData070522)[1]<-"SampleID"
+LicorData070522$A<-as.numeric(LicorData070522$A)
+##file 7
+LicorData070622<-read_excel("2022-07-06-0922_logdata.condensed.xlsx", skip = 14)
+LicorData070622<-LicorData070622[-1,]
+names(LicorData070622)[1]<-"SampleID"
+LicorData070622$A<-as.numeric(LicorData070622$A)
+##file 8
+LicorData070722<-read_excel("2022-07-07-0919_logdata.condensed.xlsx", skip = 14)
+LicorData070722<-LicorData070722[-1,]
+names(LicorData070722)[1]<-"SampleID"
+LicorData070722$A<-as.numeric(LicorData070722$A)
+##file 9
+LicorData070822<-read_excel("2022-07-08-0949_logdata.condensed.xlsx", skip = 14)
+LicorData070822<-LicorData070822[-1,]
+names(LicorData070822)[1]<-"SampleID"
+LicorData070822$A<-as.numeric(LicorData070822$A)
+##file 10
+LicorData070822_2<-read_excel("2022-07-08-0952_logdata.condensed.xlsx", skip = 14)
+LicorData070822_2<-LicorData070822_2[-1,]
+names(LicorData070822_2)[1]<-"SampleID"
+LicorData070822_2$A<-as.numeric(LicorData070822_2$A)
+##file 11
+LicorData071122<-read_excel("2022-07-11-0917_logdata.condensed.xlsx", skip = 14)
+LicorData071122<-LicorData071122[-1,]
+names(LicorData071122)[1]<-"SampleID"
+LicorData071122$A<-as.numeric(LicorData071122$A)
+##file 12
+LicorData071122_2<-read_excel("2022-07-11-0926_logdata.condensed.xlsx", skip = 14)
+LicorData071122_2<-LicorData071122_2[-1,]
+names(LicorData071122_2)[1]<-"SampleID"
+LicorData071122_2$A<-as.numeric(LicorData071122_2$A)
+##file 13
+LicorData071222<-read_excel("2022-07-12-0852_logdata.condensed.xlsx", skip = 14)
+LicorData071222<-LicorData071222[-1,]
+names(LicorData071222)[1]<-"SampleID"
+LicorData071222$A<-as.numeric(LicorData071222$A)
+##file 14
+LicorData071322<-read_excel("2022-07-13-0913_logdata.condensed.xlsx", skip = 14)
+LicorData071322<-LicorData071322[-1,]
+names(LicorData071322)[1]<-"SampleID"
+LicorData071322$A<-as.numeric(LicorData071322$A)
+##file 15
+LicorData071422<-read_excel("2022-07-14-0935_logdata.condensed.xlsx", skip = 14)
+LicorData071422<-LicorData071422[-1,]
+names(LicorData071422)[1]<-"SampleID"
+LicorData071422$A<-as.numeric(LicorData071422$A)
+##file 16
+LicorData071422_2<-read_excel("2022-07-14-0941_logdata.condensed.xlsx", skip = 14)
+LicorData071422_2<-LicorData071422_2[-1,]
+names(LicorData071422_2)[1]<-"SampleID"
+LicorData071422_2$A<-as.numeric(LicorData071422_2$A)
+##file 17
+LicorData071322_2<-read_excel("2022-07-13-0919_logdata.condensed .xlsx", skip = 14)
+LicorData071322_2<-LicorData071322_2[-1,]
+names(LicorData071322_2)[1]<-"SampleID"
+LicorData071322_2$A<-as.numeric(LicorData071322_2$A)
+##file 18
+LicorData070722_2<-read_excel("2022-07-07-0921_logdata.condensed.xlsx", skip = 14)
+LicorData070722_2<-LicorData070722_2[-1,]
+names(LicorData070722_2)[1]<-"SampleID"
+LicorData070722_2$A<-as.numeric(LicorData070722_2$A)
+##file 19
+LicorData070622_2<-read_excel("2022-07-06-0927_logdata.condensed.xlsx", skip = 14)
+LicorData070622_2<-LicorData070622_2[-1,]
+names(LicorData070622_2)[1]<-"SampleID"
+LicorData070622_2$A<-as.numeric(LicorData070622_2$A)
+##join licor data; need to do piecemeal
+LicorDataC1<-full_join(LicorData062822, LicorData062922)
+LicorDataC2<-full_join(LicorDataC1, LicorData063022)
+LicorDataC3<-full_join(LicorDataC2, LicorData070422)
+LicorDataC4<-full_join(LicorDataC3, LicorData070422_2)
+LicorDataC5<-full_join(LicorDataC4, LicorData070522)
+LicorDataC6<-full_join(LicorDataC5, LicorData070622)
+LicorDataC7<-full_join(LicorDataC6, LicorData070722)
+LicorDataC8<-full_join(LicorDataC7, LicorData070822)
+LicorDataC9<-full_join(LicorDataC8, LicorData070822_2)
+LicorDataC10<-full_join(LicorDataC9, LicorData071122)
+LicorDataC11<-full_join(LicorDataC10, LicorData071122_2)
+LicorDataC12<-full_join(LicorDataC11, LicorData071222)
+LicorDataC13<-full_join(LicorDataC12, LicorData071322)
+LicorDataC14<-full_join(LicorDataC13, LicorData071422)
+LicorDataC15<-full_join(LicorDataC14, LicorData071422_2)
+LicorDataC16<-full_join(LicorDataC15, LicorData071322_2)
+LicorDataC17<-full_join(LicorDataC16, LicorData070722_2)
+LicorDataCombined<-full_join(LicorDataC17, LicorData070622_2)
+LicorDataCombined$gsw<-as.numeric(LicorDataCombined$gsw)
+##read in datalog data
+MADdatalog<-read.csv("MAD Datalog - Sheet1.csv", header=T)
+##combine datalog and licor data
+LicorDatalog<-left_join(LicorDataCombined, MADdatalog)
+# LicorFiles <- list.files(path = "~/Desktop/LicorData2022/CondensedLicorFiles")
+# for (i in 1:length(LicorFiles)){
+#   LicorFile<-read_excel(LicorFiles[i], skip=14)
+#   LicorDataFile<-LicorFile[-1,]
+#   names(LicorFile)[1]<-"SampleID"
+#   LicorFile$A<-as.numeric(LicorFile$A)
+#   if (i == 1){
+#     CombinedLicorData<-LicorFile
+#   }
+#   if (i != 1){
+#     CombinedLicorData<-full_join(CombinedLicorData, LicorFile)
+#   }
+# }
+#   CombinedLicorData$gsw<-as.numeric(LicorDataCombined$gsw)
+# ##read in datalog data
+# MADdatalog<-read.csv("MAD Datalog - Sheet1.csv", header=T)
+#
+# ##combine datalog and licor data
+# LicorDatalog<-left_join(LicorDataCombined, MADdatalog)
+LicorMeans<-LicorDatalog%>%
+group_by(SampleID)%>%
+summarize(AverageA=mean(as.numeric(A)),
+sdA=sd(as.numeric(A)),
+AverageGSW=mean(gsw),
+sdGSW=sd(gsw))
+#Mycotreatment_Revised = Mycotreatment_Revised,
+#WaterTreatment = WaterTreatment,
+#Dayswithoutwater=Dayswithoutwater)
+LicorMeans<-full_join(LicorMeans, MADdatalog)
+Adata<-ggplot(data=LicorMeans%>%
+filter(AverageA>-1),
+aes(x=SoilwaterContent_gwet, y=AverageA))+
+geom_jitter(aes(color=Mycotreatment_Revised, shape=na.pass(WaterTreatment))
+#+geom_errorbar(aes(ymin=AverageA-sdA, ymax=AverageA+sdA, width=0.1, color=Mycotreatment_Revised))
+) +
+#customizing plot
+scale_color_manual(values=mycocolors)+
+theme(text = element_text(),
+panel.background =
+element_rect(fill="transparent", colour = NA),
+plot.background =
+element_rect(fill="transparent",colour = NA),
+panel.border =
+element_rect(fill="transparent", colour = "black"),
+axis.title.y =
+element_text(angle=90, size = 12,
+margin = margin(r=3, unit = "mm")),
+axis.title.x =
+element_text(size=12,
+margin = margin(t=3, unit = "mm")),
+axis.text.x = element_text(size=12,
+margin = unit(c(t = 2.5, r = 0,
+b = 0, l = 0), "mm")),
+axis.text.y = element_text(size=12,
+margin = unit(c(t = 0, r = 2.5,
+b = 0, l = 0), "mm")),
+axis.line = element_blank(),
+axis.ticks.x = element_line(colour = "black"),
+axis.ticks.y = element_line(colour = "black"),
+axis.ticks.length=unit(-1.4, "mm"),
+panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(),
+legend.key = element_rect(fill="transparent",
+colour = NA),
+legend.position ="right",
+plot.margin=margin(t=2, r=2, b=2, l=2, unit = "mm"),
+strip.background=
+element_rect(fill="transparent", colour=NA),
+strip.text = element_text(face="bold"))
+Adata
+GSWdata<-ggplot(data=LicorMeans%>%
+filter(AverageGSW>-.05),
+aes(x=SoilwaterContent_gwet, y=AverageGSW))+
+geom_point(aes(color=Mycotreatment_Revised, shape=WaterTreatment))
+GSWdata
+AvGSW<-ggplot(data=LicorMeans%>%
+filter(AverageA>-1),
+aes(x=AverageGSW, y=AverageA))+
+geom_point(aes(color=Mycotreatment_Revised))+
+facet_wrap(Mycotreatment_Revised~WaterTreatment)
+AvGSW
+MCdata<-ggplot(data=LicorMeans%>%
+filter(AverageA>-1),
+aes(x=NumColonizedRoots, y=AverageA))+
+geom_point(aes(color=Mycotreatment_Revised))
+library(ggplot2)
+library(dplyr)
+library(readxl)
+mycocolors=c("#9A3C0D","#6B8281")
+mycocolors2=c("#D4553F","#89A2A3")
+setwd("~/Desktop/LicorData2022")
+##licor file 1
+LicorData062822<-read_excel("2022-06-28-0958_logdata.condensed.xlsx", skip=14)
+LicorData062822<-LicorData062822[-1,]
+names(LicorData062822)[1]<-"SampleID"
+LicorData062822$A<-as.numeric(LicorData062822$A)
+##licor file 2
+LicorData062922<-read_excel("2022-06-29-0944_logdata.condensed.xlsx", skip=14)
+LicorData062922<-LicorData062922[-1,]
+names(LicorData062922)[1]<-"SampleID"
+LicorData062922$A<-as.numeric(LicorData062922$A)
+##licor file 3
+LicorData063022<-read_excel("2022-06-30-0908_logdata.condensed.xlsx", skip=14)
+LicorData063022<-LicorData063022[-1,]
+names(LicorData063022)[1]<-"SampleID"
+LicorData063022$A<-as.numeric(LicorData063022$A)
+##file 4
+LicorData070422<-read_excel("2022-07-04-0933_logdata.condensed.xlsx", skip = 14)
+LicorData070422<-LicorData070422[-1,]
+names(LicorData070422)[1]<-"SampleID"
+LicorData070422$A<-as.numeric(LicorData070422$A)
+##file 5
+LicorData070422_2<-read_excel("2022-07-04-0937_logdata.condensed.xlsx", skip = 14)
+LicorData070422_2<-LicorData070422_2[-1,]
+names(LicorData070422_2)[1]<-"SampleID"
+LicorData070422_2$A<-as.numeric(LicorData070422_2$A)
+##file 6
+LicorData070522<-read_excel("2022-07-05-0830_logdata.condensed.xlsx", skip = 14)
+LicorData070522<-LicorData070522[-1,]
+names(LicorData070522)[1]<-"SampleID"
+LicorData070522$A<-as.numeric(LicorData070522$A)
+##file 7
+LicorData070622<-read_excel("2022-07-06-0922_logdata.condensed.xlsx", skip = 14)
+LicorData070622<-LicorData070622[-1,]
+names(LicorData070622)[1]<-"SampleID"
+LicorData070622$A<-as.numeric(LicorData070622$A)
+##file 8
+LicorData070722<-read_excel("2022-07-07-0919_logdata.condensed.xlsx", skip = 14)
+LicorData070722<-LicorData070722[-1,]
+names(LicorData070722)[1]<-"SampleID"
+LicorData070722$A<-as.numeric(LicorData070722$A)
+##file 9
+LicorData070822<-read_excel("2022-07-08-0949_logdata.condensed.xlsx", skip = 14)
+LicorData070822<-LicorData070822[-1,]
+names(LicorData070822)[1]<-"SampleID"
+LicorData070822$A<-as.numeric(LicorData070822$A)
+##file 10
+LicorData070822_2<-read_excel("2022-07-08-0952_logdata.condensed.xlsx", skip = 14)
+LicorData070822_2<-LicorData070822_2[-1,]
+names(LicorData070822_2)[1]<-"SampleID"
+LicorData070822_2$A<-as.numeric(LicorData070822_2$A)
+##file 11
+LicorData071122<-read_excel("2022-07-11-0917_logdata.condensed.xlsx", skip = 14)
+LicorData071122<-LicorData071122[-1,]
+names(LicorData071122)[1]<-"SampleID"
+LicorData071122$A<-as.numeric(LicorData071122$A)
+##file 12
+LicorData071122_2<-read_excel("2022-07-11-0926_logdata.condensed.xlsx", skip = 14)
+LicorData071122_2<-LicorData071122_2[-1,]
+names(LicorData071122_2)[1]<-"SampleID"
+LicorData071122_2$A<-as.numeric(LicorData071122_2$A)
+##file 13
+LicorData071222<-read_excel("2022-07-12-0852_logdata.condensed.xlsx", skip = 14)
+LicorData071222<-LicorData071222[-1,]
+names(LicorData071222)[1]<-"SampleID"
+LicorData071222$A<-as.numeric(LicorData071222$A)
+##file 14
+LicorData071322<-read_excel("2022-07-13-0913_logdata.condensed.xlsx", skip = 14)
+LicorData071322<-LicorData071322[-1,]
+names(LicorData071322)[1]<-"SampleID"
+LicorData071322$A<-as.numeric(LicorData071322$A)
+##file 15
+LicorData071422<-read_excel("2022-07-14-0935_logdata.condensed.xlsx", skip = 14)
+LicorData071422<-LicorData071422[-1,]
+names(LicorData071422)[1]<-"SampleID"
+LicorData071422$A<-as.numeric(LicorData071422$A)
+##file 16
+LicorData071422_2<-read_excel("2022-07-14-0941_logdata.condensed.xlsx", skip = 14)
+LicorData071422_2<-LicorData071422_2[-1,]
+names(LicorData071422_2)[1]<-"SampleID"
+LicorData071422_2$A<-as.numeric(LicorData071422_2$A)
+##file 17
+LicorData071322_2<-read_excel("2022-07-13-0919_logdata.condensed .xlsx", skip = 14)
+LicorData071322_2<-LicorData071322_2[-1,]
+names(LicorData071322_2)[1]<-"SampleID"
+LicorData071322_2$A<-as.numeric(LicorData071322_2$A)
+##file 18
+LicorData070722_2<-read_excel("2022-07-07-0921_logdata.condensed.xlsx", skip = 14)
+LicorData070722_2<-LicorData070722_2[-1,]
+names(LicorData070722_2)[1]<-"SampleID"
+LicorData070722_2$A<-as.numeric(LicorData070722_2$A)
+##file 19
+LicorData070622_2<-read_excel("2022-07-06-0927_logdata.condensed.xlsx", skip = 14)
+LicorData070622_2<-LicorData070622_2[-1,]
+names(LicorData070622_2)[1]<-"SampleID"
+LicorData070622_2$A<-as.numeric(LicorData070622_2$A)
+##join licor data; need to do piecemeal
+LicorDataC1<-full_join(LicorData062822, LicorData062922)
+LicorDataC2<-full_join(LicorDataC1, LicorData063022)
+LicorDataC3<-full_join(LicorDataC2, LicorData070422)
+LicorDataC4<-full_join(LicorDataC3, LicorData070422_2)
+LicorDataC5<-full_join(LicorDataC4, LicorData070522)
+LicorDataC6<-full_join(LicorDataC5, LicorData070622)
+LicorDataC7<-full_join(LicorDataC6, LicorData070722)
+LicorDataC8<-full_join(LicorDataC7, LicorData070822)
+LicorDataC9<-full_join(LicorDataC8, LicorData070822_2)
+LicorDataC10<-full_join(LicorDataC9, LicorData071122)
+LicorDataC11<-full_join(LicorDataC10, LicorData071122_2)
+LicorDataC12<-full_join(LicorDataC11, LicorData071222)
+LicorDataC13<-full_join(LicorDataC12, LicorData071322)
+LicorDataC14<-full_join(LicorDataC13, LicorData071422)
+LicorDataC15<-full_join(LicorDataC14, LicorData071422_2)
+LicorDataC16<-full_join(LicorDataC15, LicorData071322_2)
+LicorDataC17<-full_join(LicorDataC16, LicorData070722_2)
+LicorDataCombined<-full_join(LicorDataC17, LicorData070622_2)
+LicorDataCombined$gsw<-as.numeric(LicorDataCombined$gsw)
+##read in datalog data
+MADdatalog<-read.csv("MAD Datalog - Sheet1.csv", header=T)
+##combine datalog and licor data
+LicorDatalog<-left_join(LicorDataCombined, MADdatalog)
+# LicorFiles <- list.files(path = "~/Desktop/LicorData2022/CondensedLicorFiles")
+# for (i in 1:length(LicorFiles)){
+#   LicorFile<-read_excel(LicorFiles[i], skip=14)
+#   LicorDataFile<-LicorFile[-1,]
+#   names(LicorFile)[1]<-"SampleID"
+#   LicorFile$A<-as.numeric(LicorFile$A)
+#   if (i == 1){
+#     CombinedLicorData<-LicorFile
+#   }
+#   if (i != 1){
+#     CombinedLicorData<-full_join(CombinedLicorData, LicorFile)
+#   }
+# }
+#   CombinedLicorData$gsw<-as.numeric(LicorDataCombined$gsw)
+# ##read in datalog data
+# MADdatalog<-read.csv("MAD Datalog - Sheet1.csv", header=T)
+#
+# ##combine datalog and licor data
+# LicorDatalog<-left_join(LicorDataCombined, MADdatalog)
+LicorMeans<-LicorDatalog%>%
+group_by(SampleID)%>%
+summarize(AverageA=mean(as.numeric(A)),
+sdA=sd(as.numeric(A)),
+AverageGSW=mean(gsw),
+sdGSW=sd(gsw))
+#Mycotreatment_Revised = Mycotreatment_Revised,
+#WaterTreatment = WaterTreatment,
+#Dayswithoutwater=Dayswithoutwater)
+LicorMeans<-full_join(LicorMeans, MADdatalog)
+Adata<-ggplot(data=LicorMeans%>%
+filter(AverageA>-1),
+aes(x=SoilwaterContent_gwet, y=AverageA))+
+geom_jitter(aes(color=Mycotreatment_Revised, shape=na.pass(WaterTreatment))
+#+geom_errorbar(aes(ymin=AverageA-sdA, ymax=AverageA+sdA, width=0.1, color=Mycotreatment_Revised))
+) +
+#customizing plot
+scale_color_manual(values=mycocolors)+
+theme(text = element_text(),
+panel.background =
+element_rect(fill="transparent", colour = NA),
+plot.background =
+element_rect(fill="transparent",colour = NA),
+panel.border =
+element_rect(fill="transparent", colour = "black"),
+axis.title.y =
+element_text(angle=90, size = 12,
+margin = margin(r=3, unit = "mm")),
+axis.title.x =
+element_text(size=12,
+margin = margin(t=3, unit = "mm")),
+axis.text.x = element_text(size=12,
+margin = unit(c(t = 2.5, r = 0,
+b = 0, l = 0), "mm")),
+axis.text.y = element_text(size=12,
+margin = unit(c(t = 0, r = 2.5,
+b = 0, l = 0), "mm")),
+axis.line = element_blank(),
+axis.ticks.x = element_line(colour = "black"),
+axis.ticks.y = element_line(colour = "black"),
+axis.ticks.length=unit(-1.4, "mm"),
+panel.grid.major = element_blank(),
+panel.grid.minor = element_blank(),
+legend.key = element_rect(fill="transparent",
+colour = NA),
+legend.position ="right",
+plot.margin=margin(t=2, r=2, b=2, l=2, unit = "mm"),
+strip.background=
+element_rect(fill="transparent", colour=NA),
+strip.text = element_text(face="bold"))
+Adata
+GSWdata<-ggplot(data=LicorMeans%>%
+filter(AverageGSW>-.05),
+aes(x=SoilwaterContent_gwet, y=AverageGSW))+
+geom_point(aes(color=Mycotreatment_Revised, shape=WaterTreatment))
+GSWdata
+AvGSW<-ggplot(data=LicorMeans%>%
+filter(AverageA>-1),
+aes(x=AverageGSW, y=AverageA))+
+geom_point(aes(color=Mycotreatment_Revised))+
+facet_wrap(Mycotreatment_Revised~WaterTreatment)
+AvGSW
+MCdata<-ggplot(data=LicorMeans%>%
+filter(AverageA>-1),
+aes(x=NumColonizedRoots, y=AverageA))+
+geom_point(aes(color=Mycotreatment_Revised))
